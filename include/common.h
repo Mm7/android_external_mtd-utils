@@ -28,7 +28,10 @@
 #include <errno.h>
 #include <features.h>
 #include <inttypes.h>
+#if !defined(ANDROID)
+// In Android VERSION is passed via command line (-DVERSION=X.X.X)
 #include "version.h"
+#endif
 
 #ifndef PROGRAM_NAME
 # error "You must define PROGRAM_NAME before including this header"
@@ -102,11 +105,12 @@ extern "C" {
 	fprintf(stderr, "%s: warning!: " fmt "\n", PROGRAM_NAME, ##__VA_ARGS__); \
 } while(0)
 
-#if defined(__UCLIBC__)
+#if defined(__UCLIBC__) || ANDROID
 /* uClibc versions before 0.9.34 don't have rpmatch() */
-#if __UCLIBC_MAJOR__ == 0 && \
+#if (__UCLIBC_MAJOR__ == 0 && \
 		(__UCLIBC_MINOR__ < 9 || \
-		(__UCLIBC_MINOR__ == 9 && __UCLIBC_SUBLEVEL__ < 34))
+		(__UCLIBC_MINOR__ == 9 && __UCLIBC_SUBLEVEL__ < 34))) || \
+    ANDROID
 #undef rpmatch
 #define rpmatch __rpmatch
 static inline int __rpmatch(const char *resp)
